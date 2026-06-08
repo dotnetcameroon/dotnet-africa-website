@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Conf Africa 2026 — Where Africa builds with .NET</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#E03131; --red-dim:#B02525; --green:#1B7A4B; --gold:#F2A900; --teal:#2F9E9E;
+    --bg:#0B0A0A; --bg2:#121011; --bg3:#1A1718;
+    --ink:#F4F1F0; --ink-dim:#A8A2A0; --ink-faint:#6E6866;
+    --line:rgba(255,255,255,0.09);
+    --glass:rgba(255,255,255,0.045);
+    --display:'Space Grotesk',sans-serif; --body:'Inter',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--body);
+    overflow-x:hidden; cursor:none; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--red);color:#fff;}
+  a{color:inherit;text-decoration:none;}
+  body.no-cursor-none{cursor:auto;}
+
+  /* ─── Custom cursor ─── */
+  .cursor-dot,.cursor-ring{position:fixed;top:0;left:0;border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:difference;}
+  .cursor-dot{width:6px;height:6px;background:#fff;transform:translate(-50%,-50%);}
+  .cursor-ring{width:38px;height:38px;border:1.5px solid rgba(255,255,255,0.6);transform:translate(-50%,-50%);transition:width .25s,height .25s,background .25s,border-color .25s;}
+  .cursor-ring.hover{width:64px;height:64px;background:rgba(224,49,49,0.18);border-color:transparent;}
+  @media (pointer:coarse){.cursor-dot,.cursor-ring{display:none;}body{cursor:auto;}}
+
+  /* ─── Noise/grain overlay ─── */
+  .grain{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:0.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+  /* ─── Nav ─── */
+  nav{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:200;
+    width:min(1240px,calc(100% - 36px));display:flex;align-items:center;justify-content:space-between;
+    padding:12px 14px 12px 18px;border-radius:100px;border:1px solid var(--line);
+    background:rgba(15,13,13,0.55);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    transition:transform .5s cubic-bezier(.16,1,.3,1),background .4s;}
+  nav.hidden{transform:translateX(-50%) translateY(-130%);}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;}
+  .logo .mark{display:flex;align-items:center;gap:5px;background:var(--red);padding:5px 11px;border-radius:8px;
+    box-shadow:0 0 22px rgba(224,49,49,.5);font-size:17px;line-height:1;}
+  .logo .mark .dot{width:6px;height:6px;border-radius:50%;background:#fff;}
+  .logo .word{font-size:17px;}
+  .nav-links{display:flex;gap:6px;}
+  .nav-links a{font-size:13.5px;font-weight:500;color:var(--ink-dim);padding:8px 14px;border-radius:100px;transition:color .25s,background .25s;}
+  .nav-links a:hover,.nav-links a.active{color:var(--ink);background:rgba(255,255,255,0.06);}
+  .nav-cta{display:flex;align-items:center;gap:7px;background:var(--red);color:#fff;font-weight:600;font-size:13.5px;
+    padding:10px 18px;border-radius:100px;box-shadow:0 0 24px rgba(224,49,49,.4);transition:transform .3s,box-shadow .3s;}
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 6px 30px rgba(224,49,49,.6);}
+  @media(max-width:880px){.nav-links{display:none;}}
+
+  /* ─── HERO ─── */
+  .hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    overflow:hidden;padding:140px 0 80px;}
+  #hero-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;}
+  .hero-veil{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(60% 55% at 80% 18%,rgba(224,49,49,.30),transparent 70%),
+      radial-gradient(55% 50% at 8% 92%,rgba(27,122,75,.28),transparent 70%),
+      radial-gradient(70% 70% at 50% 52%,transparent 30%,rgba(11,10,10,.55) 78%,rgba(11,10,10,.92) 100%);}
+  .hero-inner{position:relative;z-index:3;width:min(1240px,calc(100% - 48px));margin:0 auto;}
+
+  /* editorial broken-grid hero */
+  .hero-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:0;align-items:end;}
+  .hero-eyebrow{grid-column:1/8;display:inline-flex;align-items:center;gap:9px;align-self:start;
+    background:rgba(224,49,49,.12);border:1px solid rgba(224,49,49,.35);color:#fff;font-size:12px;font-weight:600;
+    letter-spacing:.14em;padding:8px 15px;border-radius:100px;width:max-content;margin-bottom:26px;
+    box-shadow:0 0 26px rgba(224,49,49,.25);}
+  .hero-eyebrow .pdot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);
+    animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+  .hero-title{grid-column:1/11;font-family:var(--display);font-weight:700;letter-spacing:-.035em;
+    line-height:.92;font-size:clamp(48px,9.2vw,150px);margin:0;}
+  .hero-title .l1{display:block;}
+  .hero-title .l2{display:block;padding-left:.13em;}
+  .hero-title .net{color:var(--gold);position:relative;text-shadow:0 2px 24px rgba(0,0,0,.65),0 0 50px rgba(242,169,0,.35);}
+  .hero-title em{font-style:normal;font-family:var(--display);
+    background:linear-gradient(100deg,var(--gold),var(--red));-webkit-background-clip:text;background-clip:text;color:transparent;}
+
+  .hero-side{grid-column:8/13;grid-row:2;align-self:end;justify-self:end;text-align:right;
+    padding:18px 20px 16px;max-width:330px;border-radius:18px;
+    background:linear-gradient(180deg,rgba(11,10,10,.0),rgba(11,10,10,.35));backdrop-filter:blur(2px);}
+  .hero-side p{color:var(--ink);font-size:15.5px;line-height:1.6;text-shadow:0 1px 12px rgba(0,0,0,.6);}
+  .hero-side .meta{margin-top:18px;display:flex;flex-direction:column;gap:7px;align-items:flex-end;}
+  .hero-side .meta span{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12.5px;color:var(--ink);}
+  .hero-side .meta i{width:6px;height:6px;border-radius:50%;}
+
+  .hero-foot{grid-column:1/9;display:flex;align-items:center;gap:16px;margin-top:46px;flex-wrap:wrap;}
+  .btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:600;
+    font-size:16px;padding:16px 30px;border-radius:100px;box-shadow:0 0 0 0 rgba(224,49,49,.5);
+    transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .4s;will-change:transform;}
+  .btn-primary:hover{box-shadow:0 10px 40px rgba(224,49,49,.55);}
+  .btn-ghost{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font-weight:600;font-size:16px;
+    padding:16px 28px;border-radius:100px;border:1px solid var(--line);background:var(--glass);
+    backdrop-filter:blur(8px);transition:border-color .3s,background .3s;}
+  .btn-ghost:hover{border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.08);}
+
+  /* floating editorial index marker */
+  .hero-index{position:absolute;left:24px;bottom:30px;z-index:3;font-family:var(--mono);font-size:12px;
+    color:var(--ink-faint);display:flex;flex-direction:column;gap:4px;}
+  .scroll-cue{position:absolute;right:30px;bottom:30px;z-index:3;font-family:var(--mono);font-size:11px;
+    letter-spacing:.2em;color:var(--ink-dim);writing-mode:vertical-rl;display:flex;align-items:center;gap:14px;}
+  .scroll-cue::after{content:"";width:1px;height:46px;background:linear-gradient(var(--ink-dim),transparent);animation:cue 2s infinite;}
+  @keyframes cue{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}50.1%{transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+  /* floating glass chips */
+  .chip{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;
+    font-weight:600;padding:11px 16px;border-radius:14px;border:1px solid var(--line);
+    background:var(--glass);backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5);will-change:transform;}
+  .chip.c1{top:13%;left:6%;transform:rotate(-8deg);}
+  .chip.c2{bottom:24%;right:5%;transform:rotate(7deg);}
+
+  /* ─── MARQUEE ─── */
+  .marquee{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;
+    padding:22px 0;background:var(--bg2);position:relative;z-index:5;}
+  .marquee-track{display:flex;gap:0;width:max-content;animation:scrollx 30s linear infinite;}
+  .marquee:hover .marquee-track{animation-play-state:paused;}
+  .marquee-track span{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:-.02em;
+    color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.35);padding:0 34px;display:flex;align-items:center;gap:34px;}
+  .marquee-track span::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--red);
+    -webkit-text-stroke:0;box-shadow:0 0 14px var(--red);}
+  .marquee-track .fill{color:var(--ink);-webkit-text-stroke:0;}
+  @keyframes scrollx{to{transform:translateX(-50%);}}
+
+  /* ─── Generic section ─── */
+  section.block{position:relative;width:min(1240px,calc(100% - 48px));margin:0 auto;padding:130px 0;}
+  .section-tag{font-family:var(--mono);font-size:12.5px;letter-spacing:.16em;color:var(--red);font-weight:600;
+    display:flex;align-items:center;gap:12px;}
+  .section-tag::before{content:attr(data-num);color:var(--ink-faint);}
+  .section-tag .line{flex:1;height:1px;background:var(--line);max-width:80px;}
+
+  /* reveal animation */
+  .reveal{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);}
+  .reveal.in{opacity:1;transform:none;}
+  .reveal.d1{transition-delay:.08s;}.reveal.d2{transition-delay:.16s;}.reveal.d3{transition-delay:.24s;}.reveal.d4{transition-delay:.32s;}
+
+  /* ─── WHY: editorial asymmetric ─── */
+  .why-head{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:end;margin:34px 0 70px;}
+  .why-head h2{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,68px);line-height:.98;letter-spacing:-.03em;}
+  .why-head h2 .o{color:var(--ink-faint);}
+  .why-head p{color:var(--ink-dim);font-size:17px;line-height:1.65;align-self:end;}
+  .why-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;}
+  .feature{border:1px solid var(--line);border-radius:22px;padding:32px;background:var(--bg2);position:relative;overflow:hidden;
+    transition:transform .5s cubic-bezier(.16,1,.3,1),border-color .4s;will-change:transform;}
+  .feature::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity .5s;
+    background:radial-gradient(120% 120% at 0% 0%,rgba(224,49,49,.12),transparent 55%);}
+  .feature:hover::before{opacity:1;}
+  .feature:hover{border-color:rgba(255,255,255,.2);}
+  .feature.big{grid-column:span 6;min-height:340px;display:flex;flex-direction:column;justify-content:space-between;}
+  .feature.tall{grid-column:span 3;}
+  .feature.sm{grid-column:span 3;}
+  .fnum{font-family:var(--mono);font-size:13px;color:var(--ink-faint);}
+  .ficon{width:54px;height:54px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px;}
+  .feature h3{font-family:var(--display);font-weight:600;font-size:24px;letter-spacing:-.01em;margin-bottom:12px;}
+  .feature.big h3{font-size:34px;}
+  .feature p{color:var(--ink-dim);font-size:15px;line-height:1.6;}
+  @media(max-width:880px){.feature.big,.feature.tall,.feature.sm{grid-column:span 12;}}
+
+  /* ─── STATS: kinetic counters on diagonal band ─── */
+  .stats-band{position:relative;z-index:5;background:linear-gradient(100deg,var(--red),var(--red-dim) 45%,var(--green));
+    padding:90px 0;margin:0;overflow:hidden;transform:skewY(-2.4deg);}
+  .stats-inner{transform:skewY(2.4deg);width:min(1240px,calc(100% - 48px));margin:0 auto;
+    display:grid;grid-template-columns:repeat(5,1fr);gap:20px;}
+  .stat{color:#fff;}
+  .stat .num{font-family:var(--display);font-weight:700;font-size:clamp(40px,5vw,68px);line-height:1;letter-spacing:-.03em;}
+  .stat .lbl{font-size:14px;font-weight:500;opacity:.85;margin-top:8px;}
+  .stats-band::after{content:"";position:absolute;inset:0;opacity:.12;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  @media(max-width:880px){.stats-inner{grid-template-columns:repeat(2,1fr);}}
+
+  /* ─── SPEAKERS: horizontal editorial scroll ─── */
+  .spk-head{display:flex;justify-content:space-between;align-items:flex-end;margin:34px 0 50px;flex-wrap:wrap;gap:20px;}
+  .spk-head h2{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,68px);line-height:.98;letter-spacing:-.03em;}
+  .spk-rail{display:flex;gap:20px;overflow-x:auto;padding:6px 0 24px;scroll-snap-type:x mandatory;
+    margin:0 calc(-1 * max(24px,(100vw - 1240px)/2));padding-left:max(24px,(100vw - 1240px)/2);padding-right:max(24px,(100vw - 1240px)/2);}
+  .spk-rail::-webkit-scrollbar{height:5px;}
+  .spk-rail::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px;}
+  .spk{flex:0 0 310px;scroll-snap-align:start;border:1px solid var(--line);border-radius:22px;overflow:hidden;
+    background:var(--bg2);transition:transform .5s cubic-bezier(.16,1,.3,1),border-color .4s;will-change:transform;}
+  .spk:hover{transform:translateY(-8px);border-color:rgba(255,255,255,.22);}
+  .spk-photo{height:230px;position:relative;display:flex;align-items:flex-end;padding:18px;overflow:hidden;}
+  .spk-photo .av{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-weight:700;font-size:60px;color:rgba(255,255,255,.9);}
+  .spk-photo .badge{position:relative;z-index:2;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;
+    background:rgba(0,0,0,.45);backdrop-filter:blur(6px);padding:6px 11px;border-radius:100px;}
+  .spk-body{padding:20px;}
+  .spk-body h4{font-family:var(--display);font-weight:600;font-size:20px;margin-bottom:5px;}
+  .spk-body .role{font-size:13.5px;font-weight:500;margin-bottom:14px;}
+  .spk-body .topic{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink-dim);}
+
+  /* ─── SCHEDULE: editorial list w/ hover expand ─── */
+  .sched-head{display:flex;justify-content:space-between;align-items:flex-end;margin:34px 0 44px;flex-wrap:wrap;gap:20px;}
+  .sched-head h2{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,68px);line-height:.98;letter-spacing:-.03em;}
+  .day-tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);padding:5px;border-radius:14px;}
+  .day-tabs button{font-family:var(--body);font-weight:600;font-size:13.5px;color:var(--ink-dim);background:none;border:none;
+    padding:9px 16px;border-radius:10px;cursor:none;transition:color .25s,background .25s;}
+  .day-tabs button.active{color:#fff;background:var(--red);}
+  .sched-row{display:grid;grid-template-columns:96px 130px 1fr auto;gap:24px;align-items:center;
+    padding:26px 8px;border-top:1px solid var(--line);transition:background .35s,padding .35s;position:relative;}
+  .sched-row:last-child{border-bottom:1px solid var(--line);}
+  .sched-row::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--red);transition:width .35s;}
+  .sched-row:hover{background:var(--bg2);padding-left:22px;}
+  .sched-row:hover::before{width:3px;}
+  .sched-row .time{font-family:var(--mono);font-size:15px;font-weight:600;}
+  .sched-row .time small{display:block;color:var(--ink-faint);font-size:11px;font-weight:400;margin-top:3px;}
+  .sched-row .tag{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.1em;padding:6px 12px;
+    border-radius:100px;width:max-content;}
+  .sched-row .title{font-family:var(--display);font-weight:600;font-size:20px;}
+  .sched-row .title small{display:block;font-family:var(--body);font-weight:400;font-size:13.5px;color:var(--ink-dim);margin-top:5px;}
+  .sched-row .go{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;
+    justify-content:center;opacity:0;transform:translateX(-8px);transition:opacity .35s,transform .35s,background .35s;}
+  .sched-row:hover .go{opacity:1;transform:none;}
+  .sched-row:hover .go{background:var(--red);border-color:var(--red);}
+  @media(max-width:880px){.sched-row{grid-template-columns:80px 1fr;gap:14px;}.sched-row .tag,.sched-row .go{display:none;}}
+
+  /* ─── CTA ─── */
+  .cta-wrap{position:relative;z-index:5;width:min(1240px,calc(100% - 48px));margin:80px auto;border-radius:34px;overflow:hidden;
+    padding:96px 40px;text-align:center;background:linear-gradient(120deg,var(--red),var(--green) 80%);}
+  .cta-wrap::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 100% at 75% 20%,rgba(242,169,0,.5),transparent 60%);}
+  .cta-wrap::after{content:"";position:absolute;inset:0;opacity:.1;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .cta-wrap .inner{position:relative;z-index:2;}
+  .cta-wrap .eb{display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.25);color:#fff;font-family:var(--mono);
+    font-size:12px;font-weight:600;letter-spacing:.12em;padding:8px 16px;border-radius:100px;margin-bottom:22px;border:1px solid rgba(255,255,255,.25);}
+  .cta-wrap h2{font-family:var(--display);font-weight:700;color:#fff;font-size:clamp(40px,6.5vw,86px);line-height:.95;
+    letter-spacing:-.035em;margin-bottom:18px;}
+  .cta-wrap p{color:rgba(255,255,255,.9);font-size:18px;max-width:560px;margin:0 auto 36px;line-height:1.55;}
+  .cta-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+  .cta-btns .w{background:#fff;color:#1a1a1a;font-weight:700;font-size:16px;padding:16px 32px;border-radius:100px;
+    display:inline-flex;align-items:center;gap:10px;transition:transform .3s;}
+  .cta-btns .w:hover{transform:translateY(-2px) scale(1.02);}
+  .cta-btns .o{border:1.5px solid rgba(255,255,255,.6);color:#fff;font-weight:600;font-size:16px;padding:16px 30px;border-radius:100px;}
+
+  /* ─── FOOTER ─── */
+  footer{border-top:1px solid var(--line);background:var(--bg2);padding:80px 0 36px;}
+  .foot-inner{width:min(1240px,calc(100% - 48px));margin:0 auto;}
+  .foot-top{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:40px;margin-bottom:60px;}
+  .foot-brand p{color:var(--ink-dim);font-size:14.5px;line-height:1.65;margin:18px 0;max-width:300px;}
+  .foot-soc{display:flex;gap:10px;}
+  .foot-soc a{width:40px;height:40px;border-radius:11px;border:1px solid var(--line);display:flex;align-items:center;
+    justify-content:center;color:var(--ink-dim);transition:color .25s,border-color .25s,transform .25s;}
+  .foot-soc a:hover{color:#fff;border-color:rgba(255,255,255,.3);transform:translateY(-2px);}
+  .foot-col h5{font-size:14px;font-weight:600;margin-bottom:16px;}
+  .foot-col a{display:block;color:var(--ink-dim);font-size:14px;margin-bottom:11px;transition:color .25s,padding .25s;}
+  .foot-col a:hover{color:#fff;padding-left:4px;}
+  .foot-bot{display:flex;justify-content:space-between;align-items:center;padding-top:30px;border-top:1px solid var(--line);
+    color:var(--ink-dim);font-size:13.5px;flex-wrap:wrap;gap:14px;}
+  .foot-bot .made b{color:var(--green);}
+  svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="cursor-dot"></div>
+<div class="cursor-ring"></div>
+
+<!-- ───────── NAV ───────── -->
+<nav id="nav">
+  <a href="#" class="logo" data-hover>
+    <span class="mark"><span class="dot"></span>NET</span>
+    <span class="word">Conf Africa</span>
+  </a>
+  <div class="nav-links">
+    <a href="#" class="active" data-hover>Home</a>
+    <a href="#schedule" data-hover>Schedule</a>
+    <a href="#speakers" data-hover>Speakers</a>
+    <a href="#why" data-hover>Why attend</a>
+  </div>
+  <a href="#register" class="nav-cta" data-hover>Register <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</nav>
+
+<!-- ───────── HERO ───────── -->
+<header class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-veil"></div>
+
+  <div class="chip c1" data-float="0.04"><svg class="i" viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg> C# 14</div>
+  <div class="chip c2" data-float="0.06" style="color:var(--gold)"><svg class="i" viewBox="0 0 24 24" style="stroke:var(--gold)"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg> <span style="color:var(--ink)">.NET 10</span></div>
+
+  <div class="hero-inner">
+    <div class="hero-grid">
+      <div class="hero-eyebrow reveal in"><span class="pdot"></span>NOV 24–26, 2026 · JOHANNESBURG</div>
+
+      <h1 class="hero-title">
+        <span class="l1">Where Africa</span>
+        <span class="l2">builds with <span class="net">.NET</span></span>
+      </h1>
+
+      <div class="hero-side">
+        <p>Three days of talks, workshops, and community — developers, tech leaders, and Microsoft MVPs from across the continent.</p>
+        <div class="meta">
+          <span><i style="background:var(--red);box-shadow:0 0 8px var(--red)"></i>1,200+ builders</span>
+          <span><i style="background:var(--green);box-shadow:0 0 8px var(--green)"></i>25 countries</span>
+          <span><i style="background:var(--gold);box-shadow:0 0 8px var(--gold)"></i>2 tracks · 48 sessions</span>
+        </div>
+      </div>
+
+      <div class="hero-foot">
+        <a href="#register" class="btn-primary magnetic" data-hover>Register now <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a href="#" class="btn-ghost" data-hover><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg> Watch 2025 recap</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-index">
+    <span>/ 01</span><span>HOME</span>
+  </div>
+  <div class="scroll-cue">SCROLL</div>
+</header>
+
+<!-- ───────── MARQUEE ───────── -->
+<div class="marquee">
+  <div class="marquee-track" id="mq">
+    <span class="fill">Minimal APIs</span><span>Blazor</span><span class="fill">Semantic Kernel</span><span>MAUI</span><span class="fill">Native AOT</span><span>Aspire</span><span class="fill">Cloud Native</span><span>F#</span>
+    <span class="fill">Minimal APIs</span><span>Blazor</span><span class="fill">Semantic Kernel</span><span>MAUI</span><span class="fill">Native AOT</span><span>Aspire</span><span class="fill">Cloud Native</span><span>F#</span>
+  </div>
+</div>
+
+<!-- ───────── WHY ───────── -->
+<section class="block" id="why">
+  <div class="section-tag reveal" data-num="02 —">WHY ATTEND<span class="line"></span></div>
+  <div class="why-head">
+    <h2 class="reveal">Built for the<br><span class="o">African</span> .NET community</h2>
+    <p class="reveal d1">Whether you ship production systems or you're writing your first line of C#, there's a track, a room, and a hallway conversation for you.</p>
+  </div>
+  <div class="why-grid">
+    <div class="feature big reveal magnetic-soft">
+      <div><div class="fnum">01</div>
+      <div class="ficon" style="background:rgba(224,49,49,.14);color:var(--red)">◢</div>
+      <h3>World-class talks</h3>
+      <p>Sessions on .NET 10, cloud-native APIs, AI with Semantic Kernel, and MAUI — led by MVPs and the engineers who build the platform.</p></div>
+      <div class="fnum">→ 48 sessions across 2 tracks</div>
+    </div>
+    <div class="feature tall reveal d1 magnetic-soft">
+      <div class="fnum">02</div>
+      <div class="ficon" style="background:rgba(27,122,75,.14);color:var(--green)">⬡</div>
+      <h3>Hands-on workshops</h3>
+      <p>Half-day deep-dives. Bring a laptop, leave with running code.</p>
+    </div>
+    <div class="feature tall reveal d2 magnetic-soft">
+      <div class="fnum">03</div>
+      <div class="ficon" style="background:rgba(242,169,0,.14);color:var(--gold)">✦</div>
+      <h3>A growing community</h3>
+      <p>Meet organizers & MVPs from 25+ countries. Where the next user group is born.</p>
+    </div>
+    <div class="feature big reveal d1 magnetic-soft">
+      <div><div class="fnum">04</div>
+      <div class="ficon" style="background:rgba(47,158,158,.14);color:var(--teal)">◍</div>
+      <h3>The hallway track</h3>
+      <p>The conversations between sessions are where careers turn and collaborations start. We design the space for serendipity, not just schedules.</p></div>
+      <div class="fnum">→ Johannesburg · Nov 2026</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────── STATS (diagonal kinetic) ───────── -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="stat"><div class="num" data-count="1200" data-suffix="+">0</div><div class="lbl">Attendees</div></div>
+    <div class="stat"><div class="num" data-count="60" data-suffix="+">0</div><div class="lbl">Speakers</div></div>
+    <div class="stat"><div class="num" data-count="48">0</div><div class="lbl">Sessions</div></div>
+    <div class="stat"><div class="num" data-count="25">0</div><div class="lbl">Countries</div></div>
+    <div class="stat"><div class="num" data-count="3">0</div><div class="lbl">Days</div></div>
+  </div>
+</div>
+
+<!-- ───────── SPEAKERS (horizontal rail) ───────── -->
+<section class="block" id="speakers">
+  <div class="section-tag reveal" data-num="03 —">SPEAKERS<span class="line"></span></div>
+  <div class="spk-head">
+    <h2 class="reveal">Learn from<br>the best</h2>
+    <a href="#" class="btn-ghost reveal d1" data-hover>View all 60+ <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+  <div class="spk-rail" id="spk-rail">
+    <!-- cards injected by JS -->
+  </div>
+</section>
+
+<!-- ───────── SCHEDULE ───────── -->
+<section class="block" id="schedule">
+  <div class="section-tag reveal" data-num="04 —">SCHEDULE<span class="line"></span></div>
+  <div class="sched-head">
+    <h2 class="reveal">Three days,<br>two tracks</h2>
+    <div class="day-tabs reveal d1">
+      <button class="active" data-hover>Day 1 · Nov 24</button>
+      <button data-hover>Day 2 · Nov 25</button>
+      <button data-hover>Day 3 · Nov 26</button>
+    </div>
+  </div>
+  <div id="sched-list"></div>
+</section>
+
+<!-- ───────── CTA ───────── -->
+<div class="cta-wrap reveal" id="register">
+  <div class="inner">
+    <div class="eb">EARLY BIRD ENDS AUG 31</div>
+    <h2>Claim your seat<br>at the table</h2>
+    <p>Join 1,200+ developers in Johannesburg this November. Tickets are limited — and the early-bird window closes soon.</p>
+    <div class="cta-btns">
+      <a href="#" class="w magnetic" data-hover>Get your ticket <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a href="#" class="o" data-hover>Group rates</a>
+    </div>
+  </div>
+</div>
+
+<!-- ───────── FOOTER ───────── -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <a href="#" class="logo"><span class="mark"><span class="dot"></span>NET</span><span class="word">Conf Africa</span></a>
+        <p>The first continent-wide .NET conference — built by the community, for the community.</p>
+        <div class="foot-soc">
+          <a href="#" data-hover aria-label="X"><svg class="i" viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20"/></svg></a>
+          <a href="#" data-hover aria-label="LinkedIn"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 014 0v4"/></svg></a>
+          <a href="#" data-hover aria-label="YouTube"><svg class="i" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" data-hover aria-label="GitHub"><svg class="i" viewBox="0 0 24 24"><path d="M9 19c-4 1.5-4-2.5-6-3m12 5v-3.5a3 3 0 00-.8-2.3c2.7-.3 5.5-1.3 5.5-6a4.6 4.6 0 00-1.3-3.2 4.3 4.3 0 00-.1-3.2s-1-.3-3.5 1.3a12 12 0 00-6.3 0C6 2.5 5 2.8 5 2.8a4.3 4.3 0 00-.1 3.2A4.6 4.6 0 003.6 9c0 4.7 2.8 5.7 5.5 6a3 3 0 00-.8 2.2V21"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-col"><h5>Event</h5><a href="#" data-hover>Schedule</a><a href="#" data-hover>Speakers</a><a href="#" data-hover>Venue</a><a href="#" data-hover>Travel &amp; stay</a></div>
+      <div class="foot-col"><h5>Get involved</h5><a href="#" data-hover>Register</a><a href="#" data-hover>Call for papers</a><a href="#" data-hover>Become a sponsor</a><a href="#" data-hover>Volunteer</a></div>
+      <div class="foot-col"><h5>About</h5><a href="#" data-hover>Code of conduct</a><a href="#" data-hover>Past events</a><a href="#" data-hover>Organizers</a><a href="#" data-hover>Contact</a></div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 .NET Conf Africa. A community-run event.</span>
+      <span class="made">Made in <b>Africa</b> 🌍</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ════════════ Brilliant WebGL runtime ════════════ */
+const _V=`#version 300 es\nin vec2 a;void main(){gl_Position=vec4(a,0,1);}`;
+function _gl(c){const g=c.getContext('webgl2',{alpha:true,premultipliedAlpha:true});if(!g)throw new Error('WebGL2 required');const b=g.createBuffer();g.bindBuffer(g.ARRAY_BUFFER,b);g.bufferData(g.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),g.STATIC_DRAW);return g;}
+function _sh(g,s,t){const o=g.createShader(t);g.shaderSource(o,s);g.compileShader(o);if(!g.getShaderParameter(o,g.COMPILE_STATUS))throw new Error(g.getShaderInfoLog(o));return o;}
+function _pg(g,f){const p=g.createProgram();g.attachShader(p,_sh(g,_V,g.VERTEX_SHADER));g.attachShader(p,_sh(g,f,g.FRAGMENT_SHADER));g.bindAttribLocation(p,0,'a');g.linkProgram(p);if(!g.getProgramParameter(p,g.LINK_STATUS))throw new Error(g.getProgramInfoLog(p));g.useProgram(p);g.enableVertexAttribArray(0);g.vertexAttribPointer(0,2,g.FLOAT,false,0,0);return p;}
+function _ul(g,p){const u={},n=g.getProgramParameter(p,g.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const info=g.getActiveUniform(p,i);u[info.name]=g.getUniformLocation(p,info.name);}return u;}
+function _hex(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];const r=parseInt(h.substr(0,2),16)/255,g=parseInt(h.substr(2,2),16)/255,b=parseInt(h.substr(4,2),16)/255,a=h.length>=8?parseInt(h.substr(6,2),16)/255:1;return[r,g,b,a];}
+function brilliantShader(canvas,fragSrc,cfg={}){
+  if(typeof canvas==='string')canvas=document.getElementById(canvas);
+  const gl=_gl(canvas),prog=_pg(gl,fragSrc),u=_ul(gl,prog);
+  const colors=(cfg.colors||['#000','#fff']).map(_hex);
+  const params=Object.assign({},cfg.params||{});
+  const uvS=cfg.scale??1,uvOX=cfg.offsetX??0,uvOY=cfg.offsetY??0;
+  const uvR=(cfg.rotation??0)*Math.PI/180;
+  let anim=cfg.animate!==false,t0=performance.now()/1000,tp=0,raf=null;
+  function resize(){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=r.width*d;canvas.height=r.height*d;gl.viewport(0,0,canvas.width,canvas.height);}
+  const ro=new ResizeObserver(resize);ro.observe(canvas);resize();
+  function render(now){
+    const t=anim?(now/1000-t0):tp,w=canvas.width,h=canvas.height;
+    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+    const S=[[u.uResolutionX,w],[u.uResolutionY,h],[u.uTime,t],[u.uOffsetX,0],[u.uOffsetY,0],
+      [u.uScale,uvS],[u.uUVOffsetX,uvOX],[u.uUVOffsetY,uvOY],[u.uRotation,uvR],
+      [u.uShapeType,0],[u.uCornerTL,0],[u.uCornerTR,0],[u.uCornerBL,0],[u.uCornerBR,0],
+      [u.uRefAspect,cfg.refAspect??(w/h)],[u.uColorCount,colors.length]];
+    for(const[loc,val]of S)if(loc!=null)gl.uniform1f(loc,val);
+    for(let i=0;i<5;i++){const c=colors[i]||[0,0,0,1];if(u['uColor'+i]!=null)gl.uniform4f(u['uColor'+i],c[0],c[1],c[2],c[3]);}
+    for(const[k,v]of Object.entries(params))if(u[k]!=null)gl.uniform1f(u[k],v);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    raf=requestAnimationFrame(render);
+  }
+  raf=requestAnimationFrame(render);
+  return{play(){if(!anim){t0=performance.now()/1000-tp;anim=true;}},pause(){if(anim){tp=performance.now()/1000-t0;anim=false;}},destroy(){cancelAnimationFrame(raf);ro.disconnect();}};
+}
+/* ════════════ Metaballs fragment shader ════════════ */
+const METABALLS_FRAG=`#version 300 es
+precision highp float;
+uniform float uResolutionX,uResolutionY,uTime,uOffsetX,uOffsetY,uScale,uUVOffsetX,uUVOffsetY,uRotation;
+uniform float uShapeType,uCornerTL,uCornerTR,uCornerBL,uCornerBR,uRefAspect,uColorCount;
+uniform vec4 uColor0,uColor1,uColor2,uColor3,uColor4;
+uniform float uCount,uSize,uSpeed;
+out vec4 fragColor;
+const float TWO_PI=6.28318530718;
+float hash11(float p){p=fract(p*0.1031);p*=p+33.33;p*=p+p;return fract(p);}
+vec3 dither(vec3 c,vec2 f){float n=fract(sin(dot(f,vec2(12.9898,78.233)))*43758.5453);return c+(n-0.5)/128.0;}
+vec4 getColor(int i){if(i==0)return uColor0;if(i==1)return uColor1;if(i==2)return uColor2;if(i==3)return uColor3;return uColor4;}
+vec2 ballPosition(int idx,float time){float fi=float(idx);float phase1=hash11(fi*73.156)*TWO_PI;float phase2=hash11(fi*91.213)*TWO_PI;float rate1=0.3+hash11(fi*47.834)*0.7;float rate2=0.25+hash11(fi*123.456)*0.75;float radiusX=0.15+hash11(fi*37.891)*0.3;float radiusY=0.15+hash11(fi*59.347)*0.3;float secondary=0.05*sin(time*rate1*1.7+phase2*2.0);return vec2(0.5+radiusX*sin(time*rate1+phase1)+secondary,0.5+radiusY*cos(time*rate2+phase2)+secondary*0.7);}
+float ballRadius(int idx,float baseSize){float fi=float(idx);float v=0.6+hash11(fi*17.53)*0.8;return baseSize*0.25*v;}
+void main(){
+  vec2 fragCoord=vec2(gl_FragCoord.x,uResolutionY-gl_FragCoord.y);
+  vec2 rawUV=(fragCoord-vec2(uOffsetX,uOffsetY))/vec2(uResolutionX,uResolutionY);
+  vec2 uv=rawUV-0.5;float cosR=cos(uRotation),sinR=sin(uRotation);
+  uv=vec2(uv.x*cosR-uv.y*sinR,uv.x*sinR+uv.y*cosR);uv/=max(uScale,0.01);uv+=vec2(uUVOffsetX,uUVOffsetY);uv+=0.5;
+  vec4 bgColor=getColor(0);
+  int colorCount=int(clamp(uColorCount,2.0,5.0));int ballCount=int(clamp(uCount,2.0,30.0));float ballSize=clamp(uSize,0.05,1.0);float t=uTime*uSpeed*0.5;
+  float pixelSize=1.0/min(uResolutionX,uResolutionY);
+  vec2 aspectUV=vec2(uv.x*uRefAspect,uv.y);
+  int fgColorCount=int(max(float(colorCount-1),1.0));
+  float totalInfluence=0.0;vec3 weightedColor=vec3(0.0);float weightedAlpha=0.0;float totalWeight=0.0;float power=2.7;
+  for(int i=0;i<30;i++){if(i>=ballCount)break;vec2 bPos=ballPosition(i,t);vec2 bPosAspect=vec2(bPos.x*uRefAspect,bPos.y);float radius=ballRadius(i,ballSize);float dist=length(aspectUV-bPosAspect);float safeDist=max(dist,0.001);float influence=pow(radius/safeDist,power);totalInfluence+=influence;int colorIdx=int(mod(float(i),float(fgColorCount)))+1;vec4 bColor=getColor(colorIdx);weightedColor+=bColor.rgb*influence;weightedAlpha+=bColor.a*influence;totalWeight+=influence;}
+  float aaWidth=pixelSize*8.0;float threshold=1.0;float mask=smoothstep(threshold-aaWidth,threshold+aaWidth,totalInfluence);
+  vec3 blobColor=(totalWeight>0.001)?weightedColor/totalWeight:vec3(0.5);float blobAlpha=(totalWeight>0.001)?weightedAlpha/totalWeight:1.0;
+  float interiorGlow=smoothstep(threshold,threshold*4.0,totalInfluence);blobColor=mix(blobColor,blobColor*1.15,interiorGlow*0.3);
+  float edgeDist=abs(totalInfluence-threshold);float edgeHighlight=exp(-edgeDist*15.0)*0.12;blobColor+=edgeHighlight;
+  vec4 result;result.rgb=mix(bgColor.rgb,blobColor,mask);result.a=mix(bgColor.a,blobAlpha,mask);
+  result.rgb=dither(result.rgb,fragCoord);result=clamp(result,0.0,1.0);
+  fragColor=vec4(result.rgb*result.a,result.a);
+}`;
+
+/* ════════════ Boot hero shader ════════════ */
+try{
+  brilliantShader('hero-canvas',METABALLS_FRAG,{
+    colors:['#0B0A0A','#E03131','#1B7A4B','#E03131'],
+    params:{uCount:6,uSize:0.72,uSpeed:0.34},
+    scale:2.4
+  });
+}catch(e){
+  // graceful fallback: gradient backdrop
+  document.getElementById('hero-canvas').style.background='radial-gradient(60% 60% at 75% 25%,#E0313155,transparent),radial-gradient(55% 55% at 15% 90%,#1B7A4B55,transparent),#0B0A0A';
+}
+
+/* ════════════ Custom cursor ════════════ */
+const dot=document.querySelector('.cursor-dot'),ring=document.querySelector('.cursor-ring');
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';});
+(function loop(){rx+=(mx-rx)*0.18;ry+=(my-ry)*0.18;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+document.querySelectorAll('[data-hover]').forEach(el=>{
+  el.addEventListener('mouseenter',()=>ring.classList.add('hover'));
+  el.addEventListener('mouseleave',()=>ring.classList.remove('hover'));
+});
+
+/* ════════════ Magnetic buttons ════════════ */
+document.querySelectorAll('.magnetic').forEach(el=>{
+  el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();const x=e.clientX-r.left-r.width/2;const y=e.clientY-r.top-r.height/2;el.style.transform=`translate(${x*0.3}px,${y*0.4}px)`;});
+  el.addEventListener('mouseleave',()=>el.style.transform='');
+});
+document.querySelectorAll('.magnetic-soft').forEach(el=>{
+  el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();const x=(e.clientX-r.left-r.width/2)/r.width;const y=(e.clientY-r.top-r.height/2)/r.height;el.style.transform=`translateY(-6px) rotateX(${-y*4}deg) rotateY(${x*4}deg)`;});
+  el.addEventListener('mouseleave',()=>el.style.transform='');
+});
+
+/* ════════════ Scroll reveal ════════════ */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+/* ════════════ Counters ════════════ */
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+  if(!e.isIntersecting)return;const el=e.target;const target=+el.dataset.count;const suf=el.dataset.suffix||'';
+  let cur=0;const step=target/60;const tick=()=>{cur+=step;if(cur<target){el.textContent=Math.floor(cur).toLocaleString()+suf;requestAnimationFrame(tick);}else el.textContent=target.toLocaleString()+suf;};tick();cio.unobserve(el);
+}),{threshold:0.5});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* ════════════ Parallax floaters + nav hide ════════════ */
+let lastY=0;
+addEventListener('scroll',()=>{
+  const y=scrollY;
+  document.querySelectorAll('[data-float]').forEach(el=>{const s=+el.dataset.float;el.style.transform=`translateY(${y*s}px) rotate(${el.classList.contains('c1')?-8:7}deg)`;});
+  const nav=document.getElementById('nav');
+  if(y>lastY&&y>300)nav.classList.add('hidden');else nav.classList.remove('hidden');
+  lastY=y;
+},{passive:true});
+
+/* ════════════ Speakers data → cards ════════════ */
+const speakers=[
+  {i:'AM',n:'Amara Mokoena',r:'Principal Engineer · Microsoft',rc:'var(--red)',g:['#E03131','#1B7A4B'],b:'KEYNOTE',t:'Cloud-native .NET at scale'},
+  {i:'KO',n:'Kwame Osei',r:'Microsoft MVP · Accra',rc:'var(--green)',g:['#1B7A4B','#F2A900'],b:'AI & ML',t:'AI apps with Semantic Kernel'},
+  {i:'NT',n:'Nadia Tadesse',r:'Staff Engineer · Andela',rc:'var(--gold)',g:['#F2A900','#E03131'],b:'WEB & MOBILE',t:'Blazor & MAUI in production'},
+  {i:'SD',n:'Sipho Dlamini',r:'Cloud Architect · AWS',rc:'var(--teal)',g:['#2F9E9E','#1B7A4B'],b:'CLOUD',t:'Event-driven systems in C#'},
+  {i:'LM',n:'Lerato Molefe',r:'ML Engineer · Cape Town',rc:'var(--green)',g:['#2F9E9E','#E03131'],b:'AI & ML',t:'On-device inference with ML.NET'},
+  {i:'FA',n:'Fatima Adeyemi',r:'Community Lead · Lagos',rc:'var(--gold)',g:['#F2A900','#1B7A4B'],b:'COMMUNITY',t:'Growing a .NET user group'},
+];
+document.getElementById('spk-rail').innerHTML=speakers.map(s=>`
+  <div class="spk reveal" data-hover>
+    <div class="spk-photo" style="background:linear-gradient(150deg,${s.g[0]},${s.g[1]})">
+      <span class="av">${s.i}</span><span class="badge">${s.b}</span>
+    </div>
+    <div class="spk-body">
+      <h4>${s.n}</h4><div class="role" style="color:${s.rc}">${s.r}</div>
+      <div class="topic"><svg class="i" viewBox="0 0 24 24"><path d="M12 2a3 3 0 00-3 3v6a3 3 0 006 0V5a3 3 0 00-3-3zM5 11a7 7 0 0014 0M12 18v4"/></svg>${s.t}</div>
+    </div>
+  </div>`).join('');
+document.querySelectorAll('.spk').forEach(el=>io.observe(el));
+
+/* ════════════ Schedule data ════════════ */
+const days=[
+  [
+    {tm:'09:00',d:'45 min',tag:'KEYNOTE',tc:'var(--red)',ti:'Opening Keynote: The State of .NET in Africa',s:'Amara Mokoena · Main Hall'},
+    {tm:'10:00',d:'30 min',tag:'SESSION',tc:'var(--green)',ti:'Minimal APIs & Native AOT in .NET 10',s:'Sipho Dlamini · Track B'},
+    {tm:'11:00',d:'3 hrs',tag:'WORKSHOP',tc:'var(--gold)',ti:'Hands-on: Build an AI Agent with Semantic Kernel',s:'Kwame Osei · Workshop Room 2'},
+    {tm:'14:00',d:'45 min',tag:'SESSION',tc:'var(--red)',ti:'Blazor & MAUI: One Codebase, Every Platform',s:'Nadia Tadesse · Track A'},
+    {tm:'15:30',d:'45 min',tag:'SESSION',tc:'var(--green)',ti:'Event-Driven Systems in C# with Dapr',s:'Amara Mokoena · Track B'},
+  ],
+  [
+    {tm:'09:30',d:'45 min',tag:'KEYNOTE',tc:'var(--red)',ti:'AI-Native Development: The Next Decade',s:'Lerato Molefe · Main Hall'},
+    {tm:'11:00',d:'45 min',tag:'SESSION',tc:'var(--teal)',ti:'Aspire & Observability for Distributed Apps',s:'Tendai Nkomo · Track A'},
+    {tm:'13:00',d:'3 hrs',tag:'WORKSHOP',tc:'var(--gold)',ti:'Hands-on: Ship a Blazor SPA to Production',s:'James Mwangi · Workshop Room 1'},
+    {tm:'16:00',d:'45 min',tag:'SESSION',tc:'var(--green)',ti:'Scaling Kubernetes for African Fintech',s:'Tendai Nkomo · Track B'},
+  ],
+  [
+    {tm:'10:00',d:'45 min',tag:'SESSION',tc:'var(--green)',ti:'Open Source & the African Maintainer',s:'Fatima Adeyemi · Track A'},
+    {tm:'11:30',d:'45 min',tag:'SESSION',tc:'var(--teal)',ti:'Performance Deep-Dive: Spans, Pipes & AOT',s:'Sipho Dlamini · Track B'},
+    {tm:'14:00',d:'60 min',tag:'PANEL',tc:'var(--gold)',ti:'The Future of .NET in Africa — Community Panel',s:'All speakers · Main Hall'},
+    {tm:'15:30',d:'30 min',tag:'KEYNOTE',tc:'var(--red)',ti:'Closing & The Road to 2027',s:'Organizers · Main Hall'},
+  ],
+];
+function renderDay(idx){
+  document.getElementById('sched-list').innerHTML=days[idx].map(r=>`
+    <div class="sched-row" data-hover>
+      <div class="time">${r.tm}<small>${r.d}</small></div>
+      <div class="tag" style="background:${r.tc}22;color:${r.tc}">${r.tag}</div>
+      <div class="title">${r.ti}<small>${r.s}</small></div>
+      <div class="go"><svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+    </div>`).join('');
+  document.querySelectorAll('.sched-row .go').forEach(g=>{});
+}
+renderDay(0);
+document.querySelectorAll('.day-tabs button').forEach((b,i)=>{
+  b.addEventListener('click',()=>{document.querySelectorAll('.day-tabs button').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderDay(i);});
+});
+</script>
+</body>
+</html>
